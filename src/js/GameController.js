@@ -1,65 +1,41 @@
-import GamePlay from '../js/GamePlay.js';
+export default class GamePlay {
+  constructor(fieldSize, goblinStartPosition) {
+    this.fieldSize = fieldSize;
+    this.gameContainer = document.querySelector(".field-container");
+    this.goblinPosition = goblinStartPosition;
+  }
 
-describe('GamePlay', () => {
-  describe('createField', () => {
-    let gamePlay;
-    const fieldSize = 5;
-    const goblinStartPosition = [2, 2];
+  createField(){
+    const fields = [];
+      for (let i = 0; i < this.fieldSize; i++) {
+        for (let j = 0; j < this.fieldSize; j++) {
+          fields.push(`<div class="field" data-row="${i}" data-col="${j}"style="grid-row:${i + 1}">
+          </div>`);
+        }   
+      }
+    this.gameContainer.insertAdjacentHTML("afterbegin", fields.join(''));
+    this.setOccuped(this.goblinPosition);
+  }
 
-    beforeEach(() => {
-      gamePlay = new GamePlay(fieldSize, goblinStartPosition);
-      gamePlay.gameContainer = document.createElement('div');
-      gamePlay.gameContainer.classList.add('field-container');
-      document.body.appendChild(gamePlay.gameContainer);
-    });
+  setOccuped(position) {
+    const occupedField = document.querySelector(`.field[data-row="${position[0]}"][data-col="${position[1]}"]`);
+    occupedField.classList.add("occuped");
+    }
 
-    afterEach(() => {
-      document.body.removeChild(gamePlay.gameContainer);
-    });
+  setFree(position) {
+    const occupedField = document.querySelector(`.field[data-row="${position[0]}"][data-col="${position[1]}"]`);
+    occupedField.classList.remove("occuped")
+  }
 
-    test('should create a grid of fields with the correct size', () => {
-      gamePlay.createField();
-      const fields = gamePlay.gameContainer.querySelectorAll('.field');
-      expect(fields.length).toBe(fieldSize * fieldSize);
-    });
-
-    test('should set the goblin position as occupied', () => {
-      gamePlay.createField();
-      const goblinField = gamePlay.gameContainer.querySelector(`.field[data-row="${goblinStartPosition[0]}"][data-col="${goblinStartPosition[1]}"]`);
-      expect(goblinField.classList.contains('occuped')).toBe(true);
-    });
-
-    test('should set the grid-row style for each field', () => {
-      gamePlay.createField();
-      const fields = gamePlay.gameContainer.querySelectorAll('.field');
-      fields.forEach((field, index) => {
-        const expectedGridRow = index / fieldSize + 1;
-        expect(field.style.gridRow).toBe(String(expectedGridRow));
-      });
-    });
-
-    test('should not create any duplicate fields', () => {
-      gamePlay.createField();
-      const fields = gamePlay.gameContainer.querySelectorAll('.field');
-      const fieldPositions = new Set();
-      fields.forEach((field) => {
-        const position = `${field.dataset.row}-${field.dataset.col}`;
-        expect(fieldPositions.has(position)).toBe(false);
-        fieldPositions.add(position);
-      });
-    });
-
-    test('should not create any fields outside the specified field size', () => {
-      gamePlay.createField();
-      const fields = gamePlay.gameContainer.querySelectorAll('.field');
-      fields.forEach((field) => {
-        const row = parseInt(field.dataset.row);
-        const col = parseInt(field.dataset.col);
-        expect(row).toBeGreaterThanOrEqual(0);
-        expect(row).toBeLessThan(fieldSize);
-        expect(col).toBeGreaterThanOrEqual(0);
-        expect(col).toBeLessThan(fieldSize);
-      });
-    });
-  });
-});
+  changePosition(){
+    while(true) {// eslint-disable-line
+      const newPosition = [Math.round(Math.random() * (this.fieldSize - 1)), Math.round(Math.random() * (this.fieldSize - 1))];
+      if (newPosition[0] != this.goblinPosition[0] && newPosition[1] != this.goblinPosition[1]) {
+        this.setOccuped(newPosition);
+        this.setFree(this.goblinPosition);
+        this.goblinPosition = newPosition;
+        return false;
+      }
+    }
+  }
+}
